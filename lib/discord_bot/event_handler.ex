@@ -6,7 +6,9 @@ defmodule DiscordBot.EventHandler do
   use Nostrum.Consumer
 
   def handle_event({:MESSAGE_CREATE, msg, _ws_state}) do
-    unless msg.author.bot do
+    if msg.author.bot do
+      :ignore
+    else
       Task.Supervisor.start_child(DiscordBot.TaskSupervisor, fn -> process_message(msg) end)
 
       Task.Supervisor.start_child(DiscordBot.TaskSupervisor, fn ->
