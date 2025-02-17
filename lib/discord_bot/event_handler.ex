@@ -6,14 +6,9 @@ defmodule DiscordBot.EventHandler do
   use Nostrum.Consumer
 
   def handle_event({:MESSAGE_CREATE, msg, _ws_state}) do
-    if msg.author.bot do
-      :ignore
-    else
-      Task.Supervisor.start_child(DiscordBot.TaskSupervisor, fn -> process_message(msg) end)
-
-      Task.Supervisor.start_child(DiscordBot.TaskSupervisor, fn ->
-        DiscordBot.Commands.handle_command(msg)
-      end)
+    unless msg.author.bot do
+      Task.start(fn -> process_message(msg) end)
+      Task.start(fn -> DiscordBot.Commands.handle_command(msg) end)
     end
   end
 
@@ -32,8 +27,8 @@ defmodule DiscordBot.EventHandler do
   end
 
   defp contains_any_link?(content) do
-    Enum.any?(DiscordBot.Webhooks.link_patterns(), fn {old_domain, _} ->
-      String.contains?(content, old_domain)
-    end)
+    Enum.find_value(DiscordBot.Webhooks.link_patterns(), fn {old_domain, _} ->
+      String.contains?(content, old_domain) && true
+    end) || false
   end
 end
