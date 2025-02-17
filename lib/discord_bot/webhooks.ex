@@ -13,9 +13,6 @@ defmodule DiscordBot.Webhooks do
     "x.com" => "vxtwitter.com"
   }
 
-  @doc """
-  Returns the configured link patterns for replacement.
-  """
   def link_patterns, do: @link_patterns
 
   @doc """
@@ -23,9 +20,10 @@ defmodule DiscordBot.Webhooks do
   """
   def replace_and_send(msg) do
     updated_content = replace_links(msg.content)
+    display_name = get_display_name(msg)
 
-    with {:ok, webhook} <- get_or_create_webhook(msg.channel_id, msg.author),
-         :ok <- send_webhook_message(webhook, msg.author, updated_content) do
+    with {:ok, webhook} <- get_or_create_webhook(msg.channel_id, display_name, msg.author),
+         :ok <- send_webhook_message(webhook, display_name, msg.author, updated_content) do
       Task.Supervisor.start_child(DiscordBot.TaskSupervisor, fn ->
         delayed_message_deletion(msg)
       end)
@@ -42,21 +40,29 @@ defmodule DiscordBot.Webhooks do
     end)
   end
 
-  defp get_or_create_webhook(channel_id, author) do
-    case Nostrum.Api.Channel.webhooks(channel_id) do
-      {:ok, webhooks} ->
-        case Enum.find(webhooks, &(&1.name == author.username)) do
-          nil -> create_webhook(channel_id, author)
-          webhook -> {:ok, webhook}
-        end
+  defp get_display_name(%{member: %{nick: nick}}) when not is_nil(nick), do: nick
+  defp get_display_name(%{author: %{username: username}}), do: username
 
-      {:error, reason} ->
-        {:error, reason}
+  defp get_or_create_webhook(channel_id, display_name, author) do
+    with {:ok, webhooks} <- Nostrum.Api.Channel.webhooks(channel_id),
+         nil <- Enum.find(webhooks, &(&1.name == display_name)) do
+      create_webhook(channel_id, display_name, author)
+    else
+      webhook when is_map(webhook) -> {:ok, webhook}
+      error -> error
     end
   end
 
-  defp create_webhook(channel_id, author) do
-    payload = %{"name" => author.username, "avatar" => nil}
+  defp create_webhook(channel_id, display_name, author) do
+    base_payload = %{name: display_name}
+
+    payload =
+      if author.avatar do
+        Map.put(base_payload, :avatar, author.avatar)
+      else
+        base_payload
+      end
+
     Logger.debug("Sending webhook creation request: #{inspect(payload)}")
 
     case Nostrum.Api.Webhook.create(channel_id, payload) do
@@ -70,12 +76,12 @@ defmodule DiscordBot.Webhooks do
     end
   end
 
-  defp send_webhook_message(webhook, author, content) do
+  defp send_webhook_message(webhook, display_name, author, content) do
     webhook_url = "https://discord.com/api/webhooks/#{webhook.id}/#{webhook.token}"
 
     payload = %{
       "content" => content,
-      "username" => author.username,
+      "username" => display_name,
       "avatar_url" => "https://cdn.discordapp.com/avatars/#{author.id}/#{author.avatar}.png"
     }
 
