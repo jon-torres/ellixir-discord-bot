@@ -1,6 +1,6 @@
 # eLLixir Discord Bot
 
-I tried my best to come up with a name that mixes "Elixir" and "LLM", hence "eLLixir".
+I tried my best to come up with a name that mixes (no pun intended) "Elixir" and "LLM", hence "eLLixir".
 
 ## Introduction
 I am currently learning Elixir, and as part of my learning journey, I decided to translate my Python Discord bot into Elixir. This bot is built using the `Nostrum` library for Discord interactions and features commands for interacting with an LLM, bypassing paywalls, and replacing links in messages. It's my first shot into getting elixir code ready for others to use, so I hope you like it. 
