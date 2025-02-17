@@ -13,7 +13,9 @@ I am currently learning Elixir, and as part of my learning journey, I decided to
 - Uses `Task.Supervisor` for better concurrency and scalability.
 
 ## Why Elixir?
-Elixir is an amazing functional programming language built on the Erlang VM, known for its fault tolerance, scalability, and concurrent processing. Here are some of the reasons I chose Elixir for this project:
+Elixir is an amazing functional programming language built on the Erlang VM, known for its fault tolerance, scalability, and concurrent processing. It's so great for scaling message sending, that part of Discord's backend is written in Elixir.
+
+Here are some of the reasons I chose Elixir for this project:
 
 1. **Concurrency**: The bot can handle multiple messages efficiently due to Elixir’s lightweight processes.
 2. **Fault Tolerance**: The supervision tree allows for process recovery, making the bot more resilient.
