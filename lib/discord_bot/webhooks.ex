@@ -13,18 +13,22 @@ defmodule DiscordBot.Webhooks do
     "x.com" => "vxtwitter.com"
   }
 
+  @doc """
+  Returns the configured link patterns for replacement.
+  """
   def link_patterns, do: @link_patterns
 
   @doc """
   Detects and replaces URLs in a message. Then, sends a webhook message and deletes the original.
   """
-  @spec replace_and_send(any()) :: :ok | {:ok, pid()}
   def replace_and_send(msg) do
     updated_content = replace_links(msg.content)
 
     with {:ok, webhook} <- get_or_create_webhook(msg.channel_id, msg.author),
          :ok <- send_webhook_message(webhook, msg.author, updated_content) do
-      Task.start(fn -> delayed_message_deletion(msg) end)
+      Task.Supervisor.start_child(DiscordBot.TaskSupervisor, fn ->
+        delayed_message_deletion(msg)
+      end)
     else
       {:error, reason} -> Logger.error("Error: #{inspect(reason)}")
     end
@@ -34,7 +38,7 @@ defmodule DiscordBot.Webhooks do
     Logger.info("Replacing links in: #{content}")
 
     Enum.reduce(@link_patterns, content, fn {old, new}, acc ->
-      String.replace(acc, old, new)
+      Regex.replace(~r/\b#{Regex.escape(old)}\b/, acc, new)
     end)
   end
 
@@ -52,8 +56,12 @@ defmodule DiscordBot.Webhooks do
   end
 
   defp create_webhook(channel_id, author) do
-    case Nostrum.Api.Webhook.create(channel_id, author.username, "") do
+    payload = %{"name" => author.username, "avatar" => nil}
+    Logger.debug("Sending webhook creation request: #{inspect(payload)}")
+
+    case Nostrum.Api.Webhook.create(channel_id, payload) do
       {:ok, webhook} ->
+        Logger.info("Webhook created successfully: #{inspect(webhook)}")
         {:ok, webhook}
 
       {:error, reason} ->
@@ -71,9 +79,9 @@ defmodule DiscordBot.Webhooks do
       "avatar_url" => "https://cdn.discordapp.com/avatars/#{author.id}/#{author.avatar}.png"
     }
 
-    case HTTPoison.post(webhook_url, Jason.encode!(payload), [
-           {"Content-Type", "application/json"}
-         ]) do
+    headers = [{"Content-Type", "application/json"}]
+
+    case HTTPoison.post(webhook_url, Jason.encode!(payload), headers) do
       {:ok, %HTTPoison.Response{status_code: 204}} ->
         :ok
 
