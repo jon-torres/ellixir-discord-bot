@@ -67,6 +67,7 @@ Handles all incoming Discord messages and distributes them asynchronously using 
 - Implement database storage for user preferences.
 - Improve error handling with better logging and retry mechanisms.
 - Expand AI model interactions with agents.
+- Improve tests.
 
 ## License
 This project is licensed under the MIT License.
