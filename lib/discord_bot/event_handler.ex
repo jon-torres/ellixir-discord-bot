@@ -4,16 +4,14 @@ defmodule DiscordBot.EventHandler do
   """
 
   use Nostrum.Consumer
-  alias Nostrum.Api.Message
-  alias DiscordBot.Commands
-  alias DiscordBot.Webhooks
 
   def handle_event({:MESSAGE_CREATE, msg, _ws_state}) do
-    if msg.author.bot do
-      :ignore
-    else
-      process_message(msg)
-      Commands.handle_command(msg)
+    unless msg.author.bot do
+      Task.Supervisor.start_child(DiscordBot.TaskSupervisor, fn -> process_message(msg) end)
+
+      Task.Supervisor.start_child(DiscordBot.TaskSupervisor, fn ->
+        DiscordBot.Commands.handle_command(msg)
+      end)
     end
   end
 
@@ -24,7 +22,7 @@ defmodule DiscordBot.EventHandler do
 
     cond do
       contains_any_link?(content) ->
-        Webhooks.replace_and_send(msg)
+        DiscordBot.Webhooks.replace_and_send(msg)
 
       true ->
         :ignore

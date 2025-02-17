@@ -7,6 +7,7 @@ defmodule DiscordBot.Application do
 
   def start(_type, _args) do
     children = [
+      {Task.Supervisor, name: DiscordBot.TaskSupervisor},
       DiscordBot.EventHandler
     ]
 
