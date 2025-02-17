@@ -18,28 +18,25 @@ defmodule DiscordBot.Commands do
   defp query_ollama(prompt, msg) do
     client = Ollama.init()
 
-    case Ollama.completion(client,
-           model: @ollama_model,
-           prompt: prompt
-         ) do
-      {:ok, %{"response" => text}} ->
-        Message.create(msg.channel_id,
-          content: text,
-          message_reference: %{message_id: msg.id}
-        )
+    response_text =
+      case Ollama.completion(client,
+             model: @ollama_model,
+             prompt: prompt
+           ) do
+        {:ok, %{"response" => text}} ->
+          text
 
-      {:ok, unexpected_response} ->
-        Message.create(msg.channel_id,
-          content: "Unexpected response format: #{inspect(unexpected_response)}",
-          message_reference: %{message_id: msg.id}
-        )
+        {:ok, unexpected_response} ->
+          "Unexpected response format: #{inspect(unexpected_response)}"
 
-      {:error, reason} ->
-        Message.create(msg.channel_id,
-          content: "Error communicating with Ollama: #{inspect(reason)}",
-          message_reference: %{message_id: msg.id}
-        )
-    end
+        {:error, reason} ->
+          "Error communicating with Ollama: #{inspect(reason)}"
+      end
+
+    Message.create(msg.channel_id,
+      content: response_text,
+      message_reference: %{message_id: msg.id}
+    )
   end
 
   defp bypass_paywall(url) do
