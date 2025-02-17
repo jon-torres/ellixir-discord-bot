@@ -6,7 +6,9 @@ defmodule DiscordBot.EventHandler do
   use Nostrum.Consumer
 
   def handle_event({:MESSAGE_CREATE, msg, _ws_state}) do
-    unless msg.author.bot do
+    if msg.author.bot do
+      :ignore
+    else
       Task.start(fn -> process_message(msg) end)
       Task.start(fn -> DiscordBot.Commands.handle_command(msg) end)
     end
