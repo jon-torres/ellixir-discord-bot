@@ -21,3 +21,6 @@ discord_bot-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+# mac files
+.DS_Store
