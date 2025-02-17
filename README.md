@@ -43,7 +43,7 @@ Handles all incoming Discord messages and distributes them asynchronously using 
 ## Dependencies
 - [`Nostrum`](https://hex.pm/packages/nostrum) - A Discord API library for Elixir.
 - [`HTTPoison`](https://hex.pm/packages/httpoison) - HTTP client for sending webhook messages.
-- [`Jason`](https://hex.pm/packages/jason) - JSON parsing library.
+- [`Ollama`](https://hexdocs.pm/ollama/Ollama.html) - "Ollama is a powerful tool for running large language models locally or on your own infrastructure. This library provides an interface for working with Ollama in Elixir".
 
 ## Setup & Running
 1. Clone the repository:
