@@ -87,7 +87,7 @@ defmodule DiscordBot.Webhooks do
 
     headers = [{"Content-Type", "application/json"}]
 
-    case HTTPoison.post(webhook_url, Jason.encode!(payload), headers) do
+    case HTTPoison.post(webhook_url, JSON.encode!(payload), headers) do
       {:ok, %HTTPoison.Response{status_code: 204}} ->
         :ok
 
