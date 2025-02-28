@@ -6,7 +6,8 @@ I tried my best to come up with a name that mixes (no pun intended) "Elixir" and
 I am currently learning Elixir, and as part of my learning journey, I decided to translate my Python Discord bot into Elixir. This bot is built using the `Nostrum` library for Discord interactions and features commands for interacting with an LLM, bypassing paywalls, and replacing links in messages. It's my first shot into getting elixir code ready for others to use, so I hope you like it. 
 
 ## Features
-- Chat with an AI model using `!chatwithme <message>`.
+- Chat with an AI model using `!chatwithme <message>`. 
+   - Ollama and LM Studio API calling out of the box. Just spin the respective server(s), define your system and you're ready to go.
 - Bypass paywalls using `!bypass <url>`.
 - Replace certain social media links in messages with alternative versions, making videos available in the chat.
 - Webhook-based message modification and deletion.
@@ -56,19 +57,28 @@ Handles all incoming Discord messages and distributes them asynchronously using 
    mix deps.get
    ```
 3. Set your Discord bot token in the environment variables.
-4. Run the bot:
+4. Set your LLM API in the environment variables. Defaults to LM Studio.
+
+```sh
+export LLM_CHOICE=lm_studio
+```
+```sh
+export LLM_CHOICE=ollama
+```
+
+5. Run the bot:
    ```sh
    iex -S mix
    ```
    or
+
    ```sh
    mix run --no-halt
    ```
 
 ## Future Improvements
-- Implement database storage for user preferences.
-- Improve error handling with better logging and retry mechanisms.
 - Expand AI model interactions with agents.
+- ~~Implement LM Studio API calling~~.
 - Improve tests.
 
 ## License
